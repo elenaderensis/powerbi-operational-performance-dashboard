@@ -6,7 +6,7 @@ This project was developed to support operational monitoring and performance rep
 The project covered the full analytics lifecycle, including data extraction, structuring, validation, and transformation using SQL, followed by data modeling and visualization in Power BI. A strong emphasis was placed on data quality, consistency, and usability to ensure the dashboard could be confidently used for ongoing operational and performance reporting.
 
 Project resources:
-Power BI dashboard can be downloaded here: (link to .pbix file in repo)
+Power BI dashboard can be downloaded here: https://github.com/elenaderensis/powerbi-operational-performance-dashboard/blob/main/Power%20Bi%20Project.pbix
 
 2. Data Structure Overview
 The dataset consists of three core tables used for operational analysis:
