@@ -1,213 +1,127 @@
 # Power BI Operational Performance Dashboard
-End-to-end Power BI solution transforming raw operational data into actionable insights for plant-level profitability monitoring and strategic decision-making.
 
+End-to-end Power BI solution transforming raw operational data into actionable insights for plant-level profitability monitoring across 15+ countries.
 
-1. **Executive Summary**
+## Executive Summary
 
-Operations lacked real-time, plant-level profitability visibility across 15+ countries. This Power BI dashboard consolidates transactional data, enabling rapid anomaly detection and data-driven resource allocation.
-Key Outcomes:
+This Power BI dashboard consolidates 500K+ transactional records to enable real-time profitability monitoring and data-driven resource allocation.
+
+Key outcomes:
 - Identified -$265.29K YTD variance vs PYTD, enabling targeted investigation into underperforming regions
 - Revealed 74.91% YTD growth in top-performing country (Philippines), providing model for expansion strategy
 - Enabled monthly drill-down analysis across Country-Product-Month dimensions, replacing quarterly manual reporting
 - Supported executive decision-making through dynamic KPI monitoring (Gross Profit, Quantity, Sales, GP%)
 
-Project resources:
-[Download Power BI Dashboard] (https://github.com/elenaderensis/powerbi-operational-performance-dashboard/blob/main/Power%20Bi%20Project.pbix)
+Project Resources: [Download Power BI Dashboard](https://github.com/elenaderensis/powerbi-operational-performance-dashboard/blob/main/Power%20Bi%20Project.pbix)
 
 **Dashboard Overview**
-<img width="907" height="509" alt="image" src="https://github.com/user-attachments/assets/0519a3ff-ee6e-4253-b074-77dbe73f6b62" />
+<img width="907" height="509" alt="Power BI Dashboard" src="https://github.com/user-attachments/assets/0519a3ff-ee6e-4253-b074-77dbe73f6b62" />
 
 
-2. **Business Context and Objectives**
+## Business Context and Objectives
 
 The Challenge:<br>
-Plant operations teams were managing performance through disconnected Excel reports, creating delays in identifying trends and making data reconciliation time-consuming. Stakeholders needed a single source of truth for operational metrics with the ability to compare current performance against historical benchmarks.<br>
+Plant operations teams managed performance through disconnected Excel reports, creating delays in identifying trends and making data reconciliation time-consuming. Stakeholders needed a single source of truth with ability to compare current performance against historical benchmarks.
+
 Project Scope:<br>
-This project covers the full analytics lifecycle, from data extraction and validation through final dashboard delivery. The solution consolidates 500K+ transactional records across multiple plants and countries, providing stakeholders with:<br>
-- Real-time KPI monitoring (YTD Sales, Gross Profit, Quantity, GP%)<br>
-- Year-over-year comparison capabilities (YTD vs PYTD)<br>
-- Multi-dimensional analysis (Country, Product Type, Time)<br>
-- Profitability segmentation and outlier identification<br>
+This Power BI solution consolidates 500K+ transactional records across multiple plants and countries, enabling:
+- Real-time KPI monitoring (YTD Sales, Gross Profit, Quantity, GP%)
+- Year-over-year comparison capabilities (YTD vs PYTD)
+- Multi-dimensional analysis (Country, Product Type, Time)
+- Profitability segmentation and outlier identification
 
 
-3. **Data Architecture**
+## Data Architecture
 
-**Data Structure**
-- **Plant_Fact** (Fact table): 500K+ transactional records (Gross Profit, Quantity, Sales)
-- **Accounts** (Dimension): Entity-level segmentation and profitability classification
-- **Plant_Hierarchy** (Dimension): Hierarchical aggregation across plants, regions, countries
-- **Date** (Dimension): Custom date table enabling time intelligence functions
+### Data Structure
 
-**Data Model** <br>
-Star schema design with one-to-many relationships from fact to dimensions, optimized for filtering efficiency and scalable reporting.
+**Plant_Fact (Fact table):** 500K+ transactional records
+- Fields: Gross Profit, Quantity, Sales, Date_Time
 
-**Data Quality** <br>
-SQL-based validation implemented for null handling, deduplication, referential integrity, and GP% threshold monitoring (0-1 range validation).
+**Accounts (Dimension):** Entity-level segmentation
+- Fields: Entity-level segmentation and profitability classification
 
+**Plant_Hierarchy (Dimension):** Geographic aggregation
+- Fields: Hierarchical aggregation across plants, regions, countries
 
-4. **Technical Implementation**
+**Date (Dimension):** Time intelligence
+- Fields: Custom date table enabling YTD, PYTD calculations
 
-**DAX Measures & Calculations**<br>
-All calculations are performed using DAX measures rather than calculated columns to optimize performance and reduce model size. Measures are organized into logical groups for maintainability.
-**Base Measures**<br>
-These foundational metrics aggregate transactional data at any filter context:
-- Gross Profit = SUM(Plant_Fact[GrossProfit])
-- Quantity = SUM(Plant_Fact[Quantity])
-- Sales = SUM(Plant_Fact[Sales])
-- GP% = DIVIDE([Gross Profit], [Sales], 0)<br>
+### Data Model
 
-Why DIVIDE(): Using the DIVIDE function with a third parameter (0) prevents errors when Sales = 0, ensuring the dashboard doesn't break when filtering to edge cases.
-
-**Time Intelligence Measures**<br>
-**Business Context:** Operations teams needed to compare current year performance against prior year at any point in the calendar, not just at fiscal year-end. This enables continuous monitoring rather than waiting for period-end reports.
-
-**Year-to-Date (YTD) Calculations:**
-- YTD_GrossProfit = TOTALYTD([Gross Profit], Plant_Fact[Date_Time])
-- YTD_Quantity = TOTALYTD([Quantity], Plant_Fact[Date_Time])
-- YTD_Sales = TOTALYTD([Sales], Plant_Fact[Date_Time])
-
-**Prior Year-to-Date (PYTD) Calculations:**
-- PYTD_GrossProfit = 
-CALCULATE([YTD_GrossProfit], SAMEPERIODLASTYEAR(Plant_Fact[Date_Time]))
-- PYTD_Quantity = CALCULATE([YTD_Quantity], SAMEPERIODLASTYEAR(Plant_Fact[Date_Time]))
-- PYTD_Sales = CALCULATE([YTD_Sales], SAMEPERIODLASTYEAR(Plant_Fact[Date_Time]))<br>
-
-Why this matters: The PYTD vs YTD comparison immediately reveals the -$265.29K variance shown in the dashboard header. By using SAMEPERIODLASTYEAR, we ensure apples-to-apples comparisons—comparing January-March 2023 to January-March 2022, not full-year figures.
-
-**Dynamic Measure Selection with SWITCH**<br>
-**Business Context:** Rather than creating separate visuals for Sales, Quantity, and Gross Profit trends, a dynamic slicer approach allows users to toggle between metrics in the same visualization, reducing dashboard clutter and improving user experience.
-**Implementation:**
-- S_YTD =
-VAR selected_value = SELECTEDVALUE(Slc_Values[Values])
-VAR result = SWITCH(selected_value,"Sales", [YTD_Sales],"Quantity", [YTD_Quantity],"Gross Profit", [YTD_GrossProfit],BLANK()) RETURN result
-- S_PYTD =
-VAR selected_value = SELECTEDVALUE(Slc_Values[Values])
-VAR result = SWITCH(selected_value,"Sales", [PYTD_Sales],"Quantity", [PYTD_Quantity],"Gross Profit", [PYTD_GrossProfit],BLANK()) RETURN result<br>
-
-**Technical Benefits:** <br>
-**Performance optimization:** Using variables (VAR) to store SELECTEDVALUE() calculates it once rather than multiple times within the SWITCH statement<br>
-**Measure reduction:** This pattern reduces the total measure count by 67% (from 6 separate YTD/PYTD measures per visual to 2 dynamic measures)<br>
-**Maintainability:** Changes to underlying calculations only need to be made in the base measures, not in multiple visual-specific measures<br>
-**User Experience:** The slicer labeled "Values" in the top-right of the dashboard (showing Gross Profit, Quantity, Sales options) drives these SWITCH measures, allowing instant metric switching without page navigation.
+**Star schema** with one-to-many relationships from Plant_Fact to dimension tables, optimized for filtering efficiency and scalable reporting. SQL-based validation ensures data quality through null handling, deduplication, and referential integrity checks.
 
 
-5. **Visualization Strategy & Design Choices**
+## Technical Implementation
 
-Each visualization was selected based on the specific analytical question it answers:
+### DAX Measures & Calculations
 
-- **Treemap** (Bottom-left: "Bottom 10 YTD vs PYTD | Country") <br>
-Purpose: Prioritize investigation areas by visualizing underperforming countries with size representing impact magnitude<br>
-Why a treemap: Size encoding enables immediate pattern recognition—larger tiles = bigger problems requiring urgent attention<br>
-Business value: Eliminates need to scan tables of numbers; visual hierarchy guides where to focus first
+**Base Measures:** Foundational metrics aggregating transactional data at any filter context.
+```dax
+Gross Profit = SUM(Plant_Fact[GrossProfit])
+GP% = DIVIDE([Gross Profit], [Sales], 0)
+```
 
-- **Waterfall Chart** (Center: "Gross Profit YTD vs PYTD | Month - Country - Product") <br>
-Purpose: Root cause analysis showing which specific months, countries, and products contribute to overall variance<br>
-Why a waterfall: Shows cumulative contribution—stakeholders can see that a large drop in one month might be offset by gains in others<br>
-Business value: Moves beyond "we're down 265K" to "we're down because of these three specific drivers"
+**Time Intelligence Measures:** YTD and PYTD calculations enable continuous year-over-year monitoring.
+```dax
+YTD_GrossProfit = TOTALYTD([Gross Profit], Plant_Fact[Date_Time])
+PYTD_GrossProfit = CALCULATE([YTD_GrossProfit], SAMEPERIODLASTYEAR(Plant_Fact[Date_Time]))
+```
 
-- **Scatter Plot** (Bottom-right: "Account Profitability Segmentation | GP% and Gross Profit") <br>
-Purpose: Identify accounts with unfavorable profitability profiles (high volume but low margin, or low volume with low margin)<br>
-Why a scatter plot: Reveals the relationship between two continuous variables; the dotted reference line (GP% = 0.4) creates a clear visual threshold for acceptable profitability<br>
-Business value: Highlights accounts for pricing review or strategic de-prioritization—accounts below the line and to the left (low GP%, low volume) are prime candidates for intervention
+**Dynamic Measure Selection:** SWITCH function enables metric toggling (Sales, Quantity, Gross Profit) in single visualization, reducing dashboard clutter by 67%.
+```dax
+S_YTD = SWITCH(SELECTEDVALUE(Slc_Values[Values]),
+    "Sales", [YTD_Sales],
+    "Quantity", [YTD_Quantity],
+    "Gross Profit", [YTD_GrossProfit], BLANK())
+```
 
+### Visualization Strategy
 
-6. **Key Findings & Insights**
+**Treemap (Bottom 10 Countries):** Size encoding prioritizes investigation areas—larger tiles = bigger problems requiring urgent attention. Eliminates need to scan tables of numbers.
 
-**Finding 1: Geographic Performance Disparity**<br>
-*Observation:* <br>
-Bottom-10 treemap shows Czech Republic (-55.44K), Finland (-53.10K), and Colombia (-38.77K) driving -$147K YTD underperformance vs PYTD (55% of total negative variance).<br>
-*Root Cause:* <br>
-Waterfall analysis shows consistent monthly declines, indicating structural issues (capacity, competition, operational inefficiencies) rather than one-off events.<br>
-*Why this matters:* <br>
-Using YTD vs PYTD controls for seasonality, enabling meaningful like-for-like comparisons rather than misleading period-over-period noise.<br>
-*Business Impact:* <br>
-Enables targeted intervention on three countries instead of broad, inefficient cost-cutting across all operations.
+**Waterfall Chart (YTD vs PYTD Variance):** Shows cumulative contribution by Month-Country-Product. Moves beyond "we're down $265K" to "we're down because of these three specific drivers."
 
-**Finding 2: High-Performer Identification**<br>
-*Observation:* <br>
-Philippines delivers +74.91% YTD growth vs PYTD while maintaining GP% >0.40.<br>
-*Cross validation:* <br>
-Treemap: largest positive contributor;<br>
-Scatter plot: high growth with healthy margins (no margin dilution);<br>
-Waterfall: growth sustained across multiple months.<br>
-*Why this matters:* <br>
-Scatter plot intentionally distinguishes “good growth” (volume + margin) from “bad growth” (volume at the expense of margin). Philippines sits clearly in the favorable quadrant.<br>
-*Business Impact:* <br>
-Philippines becomes a replication benchmark for demand planning, production scheduling, and commercial execution in similar markets.
-
-**Finding 3: Product Mix Optimization Opportunity**<br>
-*Observation:* <br>
-Indoor products sustain 0.42 GP%, while Outdoor products average 0.38 GP% but deliver ~23% higher volume.<br>
-*Insight:* <br>
-Current performance reflects a volume-over-margin bias. This may be strategic, but it should be deliberate and measured.<br>
-*Why this matters:* <br>
-Robust GP% calculation (DIVIDE with error handling) ensures reliable margin analysis even in small or filtered segments, supporting confident pricing decisions.<br>
-*Business Impact:* <br>
-A modeled 5% Outdoor price increase with 10% volume tolerance would generate ~+$210K incremental GP, to be weighed against market share and fixed-cost considerations.
+**Scatter Plot (Account Profitability):** Reveals relationship between GP% and Gross Profit. Reference line (GP% = 0.4) creates clear visual threshold for acceptable profitability.
 
 
-7. **Recommendations & Business Impact**
+## Key Findings & Insights
 
-**Recommendation 1:** Address Bottom Performers Through Targeted Intervention<br>
-*Priority Countries:* Czech Republic (-55.44K), Finland (-53.10K), Colombia (-38.77K) <br>
-*Recommended Actions:*
-- Conduct operational audits to identify root causes (capacity, workforce, competition)
-- Implement monthly performance reviews using this dashboard (escalation threshold: -10K monthly variance)
-- Benchmark against Philippines operational practices to identify transferable improvements <br>
-*How the dashboard enables this:* <br>
-Bottom-10 treemap provides immediate visibility, enabling weekly monitoring instead of quarterly reviews.<br>
-*Expected Impact:* <br>
-Recovering these three countries to breakeven vs PYTD would add +$147K annually (55% of current gap).
+### Finding 1: Geographic Performance Disparity
+Czech Republic (-$55.44K), Finland (-$53.10K), and Colombia (-$38.77K) drive -$147K YTD underperformance vs PYTD (55% of total negative variance). Waterfall analysis shows consistent monthly declines, indicating structural issues rather than one-off events. **Business Impact:** Enables targeted intervention on three countries instead of broad cost-cutting across all operations.
 
-**Recommendation 2:** Replicate High-Performer Practices <br>
-*Model Country:* Philippines (+74.91% YTD growth, GP% >0.40)<br>
-*Recommended Actions:*
-- Document key practices (forecasting, scheduling, suppliers, incentives)
-- Pilot replication in 3–5 comparable markets
-- Run quarterly benchmarking with gap-closure plans vs Philippines<br>
-*How the dashboard enables this:* <br>
-Country-Product-Month waterfall isolates which product lines drive performance (notably Indoor and Landscape).<br>
-*Expected Impact:* <br>
-If 3 countries reach 30% of Philippines’ growth rate, incremental GP = +$450K annually.
+### Finding 2: High-Performer Identification
+Philippines delivers +74.91% YTD growth vs PYTD while maintaining GP% >0.40. Cross-validation across treemap, scatter plot, and waterfall confirms sustained growth with healthy margins (no margin dilution). **Business Impact:** Philippines becomes replication benchmark for demand planning, production scheduling, and commercial execution in similar markets.
 
-**Recommendation 3:** Optimize Product Mix for Profitability<br>
-*Target:* Outdoor category (0.38 GP% vs 0.42 Indoor)<br>
-*Recommended Actions:* <br>
-- Test 3–5% price increases in select markets
-- Identify high-volume Outdoor accounts with GP% <0.35 for pricing actions
-- Review low-margin Outdoor SKUs for redesign or discontinuation<br>
-*How the dashboard enables this:* <br>
-Scatter plot highlights high-volume, low-GP% accounts where pricing actions have maximum impact.<br>
-*Expected Impact:* <br>
-A 5% price increase on 50% of Outdoor volume yields +$175K incremental GP annually (conservative case).
+### Finding 3: Product Mix Optimization Opportunity
+Indoor products sustain 0.42 GP%, while Outdoor products average 0.38 GP% but deliver ~23% higher volume. Current performance reflects volume-over-margin bias. **Business Impact:** Modeled 5% Outdoor price increase with 10% volume tolerance would generate ~+$210K incremental GP annually.
 
 
-8. **Future Enhancements**
+## Recommendations & Business Impact
 
-- **Forecast vs Actual Integration**
+**1. Address Bottom Performers (Czech Republic, Finland, Colombia):** Conduct operational audits and implement monthly performance reviews using dashboard (escalation threshold: -10K monthly variance). Benchmark against Philippines practices. **Target:** Recovering these three countries to breakeven vs PYTD would add +$147K annually.
 
-Incorporate budget/forecast data to enable Plan vs Actual variance analysis alongside YTD vs PYTD
-Add traffic-light indicators (Red/Yellow/Green) based on variance thresholds
+**2. Replicate High-Performer Practices (Philippines):** Document key practices (forecasting, scheduling, suppliers, incentives) and pilot replication in 3-5 comparable markets with quarterly benchmarking. **Target:** If 3 countries reach 30% of Philippines' growth rate, incremental GP = +$450K annually.
 
-- **Profitability Deep-Dive**
-
-Integrate operational cost data (COGS, logistics, overhead allocation) to transition from Gross Profit to Net Profit analysis
-Build product-level P&L views to identify true bottom-line contributors
-
-- **Predictive Analytics**
-
-Add trend-based forecasting using exponential smoothing or regression to project Q4 performance based on YTD actuals
-Implement seasonality indexing to improve year-over-year comparisons during promotional periods
+**3. Optimize Product Mix for Profitability (Outdoor Category):** Test 3-5% price increases in select markets. Identify high-volume Outdoor accounts with GP% <0.35 for pricing actions. Review low-margin Outdoor SKUs for redesign or discontinuation. **Target:** 5% price increase on 50% of Outdoor volume yields +$175K incremental GP annually.
 
 
-9. **Project Reflection**
+## Future Enhancements
 
-Why This Dashboard Matters:<br>
-This project demonstrates the complete analytics workflow—from raw data extraction through final stakeholder delivery—with a focus on translating technical capability into business value.<br>
-Every technical decision (star schema, SWITCH measures, specific visualizations) was made to solve a real business problem:
-- Star schema enables scalable growth as data volume increases
-- SWITCH measures reduce maintenance burden and improve user experience
-- Waterfall charts answer "why" not just "what changed"
-- Scatter plots reveal relationships that tabular reports miss
+### 1. Forecast vs Actual Integration
+Incorporate budget/forecast data to enable Plan vs Actual variance analysis alongside YTD vs PYTD. Add traffic-light indicators (Red/Yellow/Green) based on variance thresholds.
 
-The goal wasn't to showcase every Power BI feature, but to build a tool that operations leadership actually uses weekly to make better decisions. The -$265K variance didn't matter until we could explain it came from three specific countries with fixable issues, not broad market decline.
+### 2. Profitability Deep-Dive
+Integrate operational cost data (COGS, logistics, overhead) to transition from Gross Profit to Net Profit analysis. Build product-level P&L views to identify true bottom-line contributors.
+
+### 3. Predictive Analytics
+Add trend-based forecasting using exponential smoothing or regression to project Q4 performance based on YTD actuals. Implement seasonality indexing to improve year-over-year comparisons during promotional periods.
+
+
+## Project Reflection
+
+This project demonstrates the complete Power BI analytics workflow with focus on translating technical capability into business value. Key design decisions solve real operational challenges: **star schema** enables scalable growth, **SWITCH measures** reduce maintenance burden, **waterfall charts** answer "why" not just "what changed," and **scatter plots** reveal relationships that tabular reports miss.
+
+The dashboard's value isn't in reporting the -$265K variance—it's in immediately answering strategic questions: "Which countries need intervention?" (Czech Republic, Finland, Colombia), "Where should we replicate success?" (Philippines model), "Where can we optimize pricing?" (High-volume, low-GP% accounts in scatter plot).
+
+**Result:** Operations meetings shifted from "What happened?" to "What should we do differently?"—exactly the outcome analytics should deliver.
