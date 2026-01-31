@@ -122,6 +122,6 @@ Add trend-based forecasting using exponential smoothing or regression to project
 
 This project demonstrates the complete Power BI analytics workflow with focus on translating technical capability into business value. Key design decisions solve real operational challenges: **star schema** enables scalable growth, **SWITCH measures** reduce maintenance burden, **waterfall charts** answer "why" not just "what changed," and **scatter plots** reveal relationships that tabular reports miss.
 
-The dashboard's value isn't in reporting the -$265K variance—it's in immediately answering strategic questions: "Which countries need intervention?" (Czech Republic, Finland, Colombia), "Where should we replicate success?" (Philippines model), "Where can we optimize pricing?" (High-volume, low-GP% accounts in scatter plot).
+The dashboard's value isn't in reporting the -$265K variance, it's in immediately answering strategic questions: "Which countries need intervention?" (Czech Republic, Finland, Colombia), "Where should we replicate success?" (Philippines model), "Where can we optimize pricing?" (High-volume, low-GP% accounts in scatter plot).
 
-**Result:** Operations meetings shifted from "What happened?" to "What should we do differently?"—exactly the outcome analytics should deliver.
+**Result:** Operations meetings shifted from "What happened?" to "What should we do differently?", exactly the outcome analytics should deliver.
